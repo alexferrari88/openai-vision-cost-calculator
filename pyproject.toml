@@ -10,7 +10,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.8"
 authors = [
-    {name = "OpenAI Vision Cost Contributors"},
+    {name = "Alex Ferrari", email = "alex@thealexferrari.com"},
 ]
 keywords = ["openai", "vision", "cost", "calculator", "ai", "tokens"]
 classifiers = [
@@ -40,9 +40,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/openai-vision-cost/openai-vision-cost"
-Repository = "https://github.com/openai-vision-cost/openai-vision-cost"
-Issues = "https://github.com/openai-vision-cost/openai-vision-cost/issues"
+Homepage = "https://github.com/alexferrari88/openai-vision-cost-calculator"
+Repository = "https://github.com/alexferrari88/openai-vision-cost-calculator"
+Issues = "https://github.com/alexferrari88/openai-vision-cost-calculator/issues"
 
 [tool.hatch.version]
 path = "src/openai_vision_cost/__init__.py"

@@ -4,8 +4,8 @@ A Python library for calculating the cost of image inputs to OpenAI vision model
 """
 
 __version__ = "1.0.0"
-__author__ = "OpenAI Vision Cost Contributors"
-__email__ = "contributors@openai-vision-cost.com"
+__author__ = "Alex Ferrari"
+__email__ = "alex@thealexferrari.com"
 
 from .calculator import calculate_image_cost, calculate_tokens_only, estimate_cost_range
 from .models import get_supported_models, is_model_supported

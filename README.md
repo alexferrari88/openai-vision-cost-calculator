@@ -251,7 +251,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 ### Development Setup
 
 ```bash
-git clone https://github.com/your-repo/openai-vision-cost.git
+git clone https://github.com/alexferrari88/openai-vision-cost-calculator.git
 cd openai-vision-cost
 pip install -e ".[dev]"
 ```

@@ -101,9 +101,10 @@ def _calculate_tile_based_tokens(
 ) -> int:
     """Calculate tokens for tile-based models.
     
-    Based on OpenAI documentation:
+    Based on OpenAI documentation and observed behavior:
     - Scale to fit in a 2048px x 2048px square, maintaining aspect ratio
     - Scale so that the shortest side is 768px long (512px for gpt-image-1)
+      BUT only if the image is larger than the target
     - Count number of 512px squares, each costs tile_tokens
     - Add base_tokens to the total
     
@@ -127,8 +128,9 @@ def _calculate_tile_based_tokens(
         height = int(height * scale_factor)
     
     # Step 2: Scale so shortest side is target length
+    # BUT only scale UP if the shortest side is already larger than target
     min_side = min(width, height)
-    if min_side != config.shortest_side_target:
+    if min_side > config.shortest_side_target:
         scale_factor = config.shortest_side_target / min_side
         width = int(width * scale_factor)
         height = int(height * scale_factor)
