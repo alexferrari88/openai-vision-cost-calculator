@@ -1,0 +1,143 @@
+name: Create Release
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'src/openai_vision_cost/__init__.py'
+
+permissions:
+  contents: write
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      version-changed: ${{ steps.version.outputs.changed }}
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+    
+    - name: Check if version changed
+      id: version
+      run: |
+        # Get current version
+        CURRENT_VERSION=$(python -c "exec(open('src/openai_vision_cost/__init__.py').read()); print(__version__)")
+        echo "Current version: $CURRENT_VERSION"
+        
+        # Get previous version
+        git checkout HEAD~1
+        PREVIOUS_VERSION=$(python -c "exec(open('src/openai_vision_cost/__init__.py').read()); print(__version__)" 2>/dev/null || echo "0.0.0")
+        git checkout -
+        echo "Previous version: $PREVIOUS_VERSION"
+        
+        # Check if version changed
+        if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+          echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "Version unchanged"
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+
+  create-release:
+    needs: check-version
+    runs-on: ubuntu-latest
+    if: needs.check-version.outputs.version-changed == 'true'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        VERSION="${{ needs.check-version.outputs.version }}"
+        
+        # Create a simple changelog from git commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        
+        if [ -n "$LAST_TAG" ]; then
+          echo "## Changes since $LAST_TAG" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD >> CHANGELOG.md
+        else
+          echo "## Changes in v$VERSION" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "- Initial release" >> CHANGELOG.md
+        fi
+        
+        # Also check for common conventional commit types
+        echo "" >> CHANGELOG.md
+        echo "### Features" >> CHANGELOG.md
+        git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD | grep "^- feat" || echo "- No new features"
+        echo "" >> CHANGELOG.md
+        echo "### Bug Fixes" >> CHANGELOG.md
+        git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD | grep "^- fix" || echo "- No bug fixes"
+        echo "" >> CHANGELOG.md
+        echo "### Documentation" >> CHANGELOG.md
+        git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD | grep "^- docs" || echo "- No documentation changes"
+        
+        # Read the changelog for the release body
+        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+        cat CHANGELOG.md >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Create Tag
+      run: |
+        VERSION="${{ needs.check-version.outputs.version }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "v$VERSION" -m "Release v$VERSION"
+        git push origin "v$VERSION"
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ needs.check-version.outputs.version }}
+        release_name: Release v${{ needs.check-version.outputs.version }}
+        body: |
+          # Release v${{ needs.check-version.outputs.version }}
+          
+          ${{ steps.changelog.outputs.CHANGELOG }}
+          
+          ## Installation
+          
+          ```bash
+          pip install openai-vision-cost==${{ needs.check-version.outputs.version }}
+          ```
+          
+          ## What's Changed
+          
+          See the [full changelog](https://github.com/alexferrari88/openai-vision-cost-calculator/compare/v${{ needs.check-version.outputs.version }}...v${{ needs.check-version.outputs.version }}) for all changes.
+        
+        draft: false
+        prerelease: false
+
+  notify:
+    needs: [check-version, create-release]
+    runs-on: ubuntu-latest
+    if: always() && needs.check-version.outputs.version-changed == 'true'
+    
+    steps:
+    - name: Notify success
+      if: needs.create-release.result == 'success'
+      run: |
+        echo "✅ Release v${{ needs.check-version.outputs.version }} created successfully!"
+        echo "The publish workflow will now automatically publish to PyPI."
+    
+    - name: Notify failure
+      if: needs.create-release.result == 'failure'
+      run: |
+        echo "❌ Failed to create release for v${{ needs.check-version.outputs.version }}"
+        exit 1
