@@ -27,9 +27,41 @@ pip install -e ".[dev]"  # Install in development mode with dev dependencies
 
 ### Build and Distribution
 ```bash
-pip install build       # Install build tool
+pip install build twine # Install build and publish tools
 python -m build         # Build wheel and source distribution
+twine check dist/*      # Validate built packages
 ```
+
+### Publishing to PyPI
+```bash
+# Manual publishing (use environment variables for tokens)
+source .env
+export TWINE_PASSWORD="$TWINE_PASSWORD_TEST"
+twine upload --repository testpypi dist/*  # Test PyPI first
+
+export TWINE_PASSWORD="$TWINE_PASSWORD_PROD"
+twine upload dist/*                         # Production PyPI
+```
+
+### GitHub Actions Workflows
+This repository includes automated CI/CD workflows:
+
+- **CI**: Runs tests, code quality checks on PRs and pushes
+- **Publish**: Automatically publishes to PyPI on GitHub releases
+- **Release**: Auto-creates GitHub releases when version is bumped in `__init__.py`
+
+#### Workflow Usage
+1. Update version in `src/openai_vision_cost/__init__.py`
+2. Commit and push to trigger auto-release
+3. Release workflow creates GitHub release
+4. Publish workflow automatically publishes to PyPI
+
+#### Required GitHub Secrets
+- `PYPI_API_TOKEN` - Production PyPI API token
+- `TEST_PYPI_API_TOKEN` - Test PyPI API token
+- `CODECOV_TOKEN` - Optional, for coverage reporting
+
+See `.github/PUBLISHING.md` for complete setup instructions.
 
 ## Code Architecture
 
