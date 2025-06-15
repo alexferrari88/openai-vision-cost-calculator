@@ -133,26 +133,6 @@ The library supports three different model families, each with different cost ca
 ### Image Tokens Model
 - **gpt-image-1**: 65 base + 129 per tile (512px shortest side)
 
-## Current OpenAI Pricing (as of 2024)
-
-Here are the current input token prices per 1M tokens from OpenAI:
-
-| Model | Price per 1M Tokens |
-|-------|---------------------|
-| gpt-4.1 | $2.00 |
-| gpt-4.1-mini | $0.40 |
-| gpt-4.1-nano | $0.10 |
-| gpt-4o | $2.50 |
-| gpt-4o-mini | $0.15 |
-| o1 | $15.00 |
-| o1-pro | $150.00 |
-| o3 | $2.00 |
-| o3-pro | $20.00 |
-| o4-mini | $1.10 |
-| computer-use-preview | $3.00 |
-| gpt-image-1 | $5.00 (text) / $10.00 (image) |
-
-**Note**: Prices may change. Always check the [OpenAI Pricing Page](https://openai.com/api/pricing/) for the most current rates.
 
 ## API Reference
 
