@@ -281,8 +281,9 @@ This library is not officially affiliated with OpenAI. It implements the cost ca
 
 ## Changelog
 
-### 1.0.0 (2024-01-XX)
+### 1.0.0 (2024-06-15)
 - Initial release
 - Support for all current OpenAI vision models
 - Comprehensive test coverage
 - Complete documentation
+- Published to PyPI
